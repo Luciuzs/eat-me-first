@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eat Me First</title>
+<meta name="theme-color" content="#17312B">
+<meta name="description" content="Namų ūkio maisto atsargų valdymas ir švaistymo prevencija">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Eat Me First">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF3F1;--card:#FFFFFF;--ink:#17312B;--muted:#5A6D67;--line:#D2DCD8;
+  --green:#2E9B57;--amber:#E2A01A;--red:#D2433A;--gray:#97A49F;
+  --btn:#17312B;--btn-ink:#FFFFFF;--soft:#E3EBE8;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0F1916;--card:#16231F;--ink:#E4EEEA;--muted:#9AAEA7;--line:#2A3A35;--soft:#1E2D28;
+  --btn:#CFE8DC;--btn-ink:#10201B;--gray:#5F6E69;
+}}
+:root[data-theme="dark"]{
+  --paper:#0F1916;--card:#16231F;--ink:#E4EEEA;--muted:#9AAEA7;--line:#2A3A35;--soft:#1E2D28;
+  --btn:#CFE8DC;--btn-ink:#10201B;--gray:#5F6E69;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;margin:0;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-top:14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.brand h1{font-size:28px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.lights{display:inline-flex;gap:4px}
+.lights i{width:10px;height:10px;border-radius:50%;display:block}
+.sync{font-size:13px;color:var(--muted)}
+.alert{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--soft);border-left:5px solid var(--red);display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.alert p{margin:0;flex:1 1 260px}
+.tabs{display:flex;gap:4px;margin-top:12px}
+.tabs button{flex:1;border:0;background:none;padding:10px 6px 12px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+main{padding:18px 0 60px}
+h2{font-size:20px;font-weight:800;margin:24px 0 10px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(6,1fr)}
+.grid .c6{grid-column:span 6}.grid .c3{grid-column:span 3}.grid .c2{grid-column:span 2}
+@media (max-width:520px){.grid .c3,.grid .c2{grid-column:span 3}}
+label{display:block;font-size:13px;color:var(--muted);font-weight:500}
+input,select,textarea{width:100%;margin-top:4px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--paper)}
+textarea{min-height:90px;resize:vertical}
+.btn{border:0;background:var(--btn);color:var(--btn-ink);padding:10px 16px;border-radius:9px;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:6px 10px;font-size:14px}
+.link{border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 10px}
+.chip{border:1px solid var(--line);background:var(--card);padding:6px 12px;border-radius:999px;cursor:pointer;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.toolbar select{width:auto;margin:0}
+ul{list-style:none;margin:0;padding:0}
+.empty{color:var(--muted);padding:18px 4px}
+
+/* Inventory: the traffic light block is the one loud thing */
+.inv li{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;margin-bottom:8px}
+.day{flex:0 0 58px;height:58px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;line-height:1}
+.day b{font-family:"Bricolage Grotesque",sans-serif;font-size:24px;font-weight:800}
+.day small{font-size:11px;margin-top:3px}
+.s-green{background:var(--green)}.s-amber{background:var(--amber);color:#2B1D00}.s-red{background:var(--red)}
+.s-expired{background:repeating-linear-gradient(135deg,var(--red) 0 6px,#A82E27 6px 12px)}.s-none{background:var(--gray)}
+.inv .info{flex:1;min-width:0}
+.inv .name{font-weight:700}
+.inv .meta{font-size:14px;color:var(--muted)}
+.inv .acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.setting{font-size:14px;color:var(--muted);margin-top:18px}
+.setting select{width:auto;display:inline;margin:0 4px;padding:4px 8px}
+
+/* Recipes */
+.recs{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.rc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.rc h3{font-size:17px;font-weight:600}
+.rc .row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green)}
+.uses{font-size:13px;background:var(--soft);border-left:4px solid var(--amber);padding:4px 8px;border-radius:4px}
+.stars{color:var(--amber);letter-spacing:1px}
+.heart{color:var(--red)}
+
+/* Shopping */
+.shop li,.plan li{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.shop input[type=checkbox]{width:20px;height:20px;margin:0;flex:0 0 auto}
+.shop .done span{text-decoration:line-through;color:var(--muted)}
+.shop .tag{font-size:12px;color:var(--muted);margin-left:auto}
+.plan .grow,.shop .grow{flex:1}
+
+/* Dialogs */
+dialog{border:0;border-radius:16px;padding:0;max-width:560px;width:calc(100% - 24px);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(10,20,17,.55)}
+.dlg{padding:18px;max-height:85vh;overflow:auto}
+.dlg h2{margin-top:0}
+.ing li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.ok{color:var(--green);font-weight:700}.miss{color:var(--red);font-weight:700}.exp{color:#B07A00;font-weight:700}
+.stepper{display:inline-flex;align-items:center;gap:8px}
+.stepper button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--paper);cursor:pointer;font-weight:700}
+ol.steps{padding-left:20px}
+.rate button{border:0;background:none;font-size:26px;color:var(--gray);cursor:pointer;padding:0 2px}
+.rate button.on{color:var(--amber)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;max-width:90%;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">
+    <h1><span class="lights" aria-hidden="true"><i style="background:var(--red)"></i><i style="background:var(--amber)"></i><i style="background:var(--green)"></i></span>Eat Me First</h1>
+    <span class="sync" id="sync">Saugoma šiame telefone</span>
+  </div>
+  <div id="alert" class="alert" hidden></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="inv" aria-selected="true">Atsargos</button>
+    <button role="tab" data-tab="rec" aria-selected="false">Receptai</button>
+    <button role="tab" data-tab="shop" aria-selected="false">Pirkiniai</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <!-- ATSARGOS -->
+  <section id="tab-inv">
+    <form id="prodForm" class="panel grid" autocomplete="off">
+      <div class="c6"><label>Produktas<input id="pName" list="ingList" required placeholder="pvz. pienas"><v>
+      <div class="c2"><label>Vienetai<select id="pUnit"><option>vnt</option><option>g</option><option>ml</option></select></label></div>
+      <div class="c2"><label>Vieta<select id="pLoc"><option>Šaldytuvas</option><option>Šaldiklis</option><option>Spintelė</option></select></label></div>
+      <div class="c3"><label>Galioja iki<input id="pExp" type="date"></label></div>
+      <div class="c3" style="display:flex;align-items:flex-end;gap:8px">
+        <button class="btn" id="pSubmit" type="submit" style="flex:1">Pridėti</button>
+        <button class="link" id="pCancel" type="button" hidden>Atšaukti</button>
+      </div>
+    </form>
+    <div class="toolbar" id="locChips"></div>
+    <ul id="invList" class="inv"></ul>
+    <p class="setting">Perspėti, kai iki galiojimo pabaigos lieka
+      <select id="warnDays"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>7</option></select> d. ar mažiau.</p>
+  </section>
+
+  <!-- RECEPTAI -->
+  <section id="tab-rec" hidden>
+    <div class="toolbar">
+      <select id="sortSel" aria-label="Rikiuoti">
+        <option value="match">Daugiausia turimų produktų</option>
+        <option value="expiring">Pirmiausia gendantys produktai</option>
+        <option value="time">Greičiausi</option>
+        <option value="rating">Geriausiai įvertinti</option>
+      </select>
+      <button class="btn small" id="newRecBtn" type="button">Naujas receptas</button>
+    </div>
+    <div class="toolbar" id="timeChips"></div>
+    <div id="recList" class="recs"></div>
+  </section>
+
+  <!-- PIRKINIAI -->
+  <section id="tab-shop" hidden>
+    <h2 style="margin-top:0">Planuojami patiekalai</h2>
+    <ul id="planList" class="plan"></ul>
+    <button class="btn ghost" id="genBtn" type="button">Sudaryti pirkinių sąrašą pagal planą</button>
+    <h2>Pirkinių krepšys</h2>
+    <form id="shopForm" class="panel grid" autocomplete="off">
+      <div class="c6"><label>Prekė<input id="sName" list="ingList" required></label></div>
+      <div class="c2"><label>Kiekis<input id="sQty" type="number" min="0" step="any" value="1"></label></div>
+      <div class="c2"><label>Vienetai<select id="sUnit"><option>vnt</option><option>g</option><option>ml</option></select></label></div>
+      <div class="c2" style="display:flex;align-items:flex-end"><button class="btn" type="submit" style="width:100%">Įdėti</button></div>
+    </form>
+    <ul id="shopList" class="shop" style="margin-top:12px"></ul>
+    <div class="actions">
+      <button class="btn" id="moveBought" type="button">Perkelti nupirktus į atsargas</button>
+      <button class="btn ghost" id="clearBought" type="button">Išvalyti nupirktus</button>
+    </div>
+  </section>
+</main>
+
+<dialog id="recDlg"><div class="dlg" id="recBody"></div></dialog>
+
+<dialog id="newDlg"><form class="dlg" id="newForm" method="dialog">
+  <h2>Naujas receptas</h2>
+  <div class="grid">
+    <div class="c6"><label>Pavadinimas<input id="nName" required></label></div>
+    <div class="c3"><label>Gaminimo laikas, min<input id="nTime" type="number" min="1" value="30" required></label></div>
+    <div class="c3"><label>Porcijos<input id="nServ" type="number" min="1" value="2" required></label></div>
+    <div class="c6"><label>Ingredientai (po vieną eilutėje: pavadinimas, kiekis, vnt/g/ml)
+      <textarea id="nIng" required placeholder="kiaušiniai, 3, vnt&#10;pienas, 200, ml&#10;druska"></textarea></label></div>
+    <div class="c6"><label>Gaminimo žingsniai (po vieną eilutėje)<textarea id="nSteps"></textarea></label></div>
+  </div>
+  <div class="actions">
+    <button class="btn" type="submit" value="save">Išsaugoti receptą</button>
+    <button class="btn ghost" type="button" id="newCancel">Atšaukti</button>
+  </div>
+</form></dialog>
+
+<datalist id="ingList"></datalist>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- Receptų katalogas ---------- */
+const STAPLES=['druska','pipirai','aliejus','vanduo','cukrus'];
+const RECIPES=[
+ {id:'r1',name:'Omletas su pomidorais',time:10,servings:1,ing:[['kiaušiniai',3,'vnt'],['pomidorai',1,'vnt'],['pienas',50,'ml'],['sūris',30,'g'],['druska']],steps:['Išplakite kiaušinius su pienu ir druska.','Supjaustykite pomidorą, sutarkuokite sūrį.','Kepkite keptuvėje ant vidutinės ugnies, užbarstykite sūrio ir pomidorų.']},
+ {id:'r2',name:'Blyneliai',time:25,servings:4,ing:[['miltai',200,'g'],['pienas',400,'ml'],['kiaušiniai',2,'vnt'],['cukrus'],['aliejus']],steps:['Išplakite kiaušinius su pienu ir cukrumi.','Įmaišykite miltus, kad neliktų gumuliukų.','Kepkite plonus blynelius įkaitintoje keptuvėje.']},
+ {id:'r3',name:'Makaronai su vištiena ir grietinėle',time:25,servings:2,ing:[['makaronai',200,'g'],['vištienos filė',300,'g'],['grietinėlė',200,'ml'],['česnakai',2,'vnt'],['sūris',50,'g'],['druska']],steps:['Išvirkite makaronus.','Apkepkite vištieną su česnaku.','Supilkite grietinėlę, įberkite sūrio, sumaišykite su makaronais.']},
+ {id:'r4',name:'Šaltibarščiai',time:20,servings:4,ing:[['kefyras',1000,'ml'],['burokėliai',400,'g'],['agurkai',2,'vnt'],['krapai',20,'g'],['kiaušiniai',4,'vnt'],['laiškiniai svogūnai',20,'g'],['bulvės',800,'g']],steps:['Išvirkite kiaušinius ir bulves.','Sutarkuokite burokėlius, supjaustykite agurkus ir žalumynus.','Sumaišykite su kefyru, patiekite su karštomis bulvėmis.']},
+ {id:'r5',name:'Daržovių sriuba',time:40,servings:4,ing:[['bulvės',400,'g'],['morkos',2,'vnt'],['svogūnai',1,'vnt'],['cukinijos',1,'vnt'],['brokoliai',200,'g'],['druska']],steps:['Supjaustykite daržoves.','Pakepinkite svogūną ir morkas.','Užpilkite vandeniu, sudėkite likusias daržoves ir virkite 25 min.']},
+ {id:'r6',name:'Graikiškos salotos',time:10,servings:2,ing:[['pomidorai',2,'vnt'],['agurkai',1,'vnt'],['paprikos',1,'vnt'],['fetos sūris',100,'g'],['alyvuogės',50,'g'],['svogūnai',1,'vnt'],['aliejus']],steps:['Stambiai supjaustykite daržoves.','Sudėkite alyvuoges ir fetos sūrį.','Apšlakstykite aliejumi.']},
+ {id:'r7',name:'Varškėčiai',time:25,servings:3,ing:[['varškė',500,'g'],['kiaušiniai',2,'vnt'],['miltai',80,'g'],['cukrus'],['aliejus']],steps:['Sumaišykite varškę, kiaušinius, cukrų ir miltus.','Suformuokite paplotėlius.','Kepkite iš abiejų pusių iki auksinės spalvos.']},
+ {id:'r8',name:'Bananų blynai',time:15,servings:2,ing:[['bananai',2,'vnt'],['kiaušiniai',2,'vnt'],['miltai',60,'g']],steps:['Sutrinkite bananus.','Įmuškite kiaušinius, įberkite miltų.','Kepkite mažus blynelius.']},
+ {id:'r9',name:'Vištienos troškinys su ryžiais',time:45,servings:4,ing:[['vištienos filė',500,'g'],['ryžiai',250,'g'],['morkos',2,'vnt'],['svogūnai',1,'vnt'],['paprikos',1,'vnt'],['tomatų padažas',300,'ml'],['druska']],steps:['Išvirkite ryžius.','Apkepkite vištieną, sudėkite daržoves.','Supilkite tomatų padažą ir troškinkite 20 min.']},
+ {id:'r10',name:'Avižinė košė su obuoliais',time:10,servings:1,ing:[['avižiniai dribsniai',60,'g'],['pienas',250,'ml'],['obuoliai',1,'vnt']],steps:['Užvirinkite pieną su dribsniais.','Virkite 5 min. maišydami.','Patiekite su tarkuotu obuoliu.']},
+ {id:'r11',name:'Karštos sumuštinės',time:10,servings:2,ing:[['duona',4,'vnt'],['sūris',80,'g'],['kumpis',80,'g'],['pomidorai',1,'vnt']],steps:['Ant duonos riekių dėkite kumpį ir pomidorą.','Užberkite sūrio.','Kepkite orkaitėje 200 °C apie 6 min.']},
+ {id:'r12',name:'Cukinijų blynai',time:30,servings:3,ing:[['cukinijos',2,'vnt'],['kiaušiniai',2,'vnt'],['miltai',80,'g'],['česnakai',1,'vnt'],['grietinė',100,'g'],['druska']],steps:['Sutarkuokite cukinijas, nuspauskite skystį.','Sumaišykite su kiaušiniais, miltais ir česnaku.','Kepkite, patiekite su grietine.']},
+ {id:'r13',name:'Keptos bulvės su grietine ir krapais',time:40,servings:3,ing:[['bulvės',1000,'g'],['grietinė',150,'g'],['krapai',15,'g'],['česnakai',2,'vnt'],['aliejus'],['druska']],steps:['Supjaustykite bulves skiltelėmis.','Kepkite orkaitėje 200 °C apie 30 min.','Patiekite su grietine, krapais ir česnaku.']},
+ {id:'r14',name:'Makaronai su tomatų padažu',time:20,servings:2,ing:[['makaronai',200,'g'],['tomatų padažas',400,'ml'],['česnakai',2,'vnt'],['sūris',40,'g']],steps:['Išvirkite makaronus.','Pakaitinkite padažą su česnaku.','Sumaišykite, užberkite sūrio.']},
+ {id:'r15',name:'Jogurtas su uogomis ir bananu',time:5,servings:1,ing:[['jogurtas',200,'g'],['bananai',1,'vnt'],['uogos',80,'g']],steps:['Supjaustykite bananą.','Sudėkite į dubenėlį su jogurtu ir uogomis.']},
+ {id:'r16',name:'Kepta lašiša su daržovėmis',time:30,servings:2,ing:[['lašiša',300,'g'],['brokoliai',300,'g'],['morkos',1,'vnt'],['citrinos',1,'vnt'],['druska']],steps:['Sudėkite žuvį ir daržoves į kepimo skardą.','Apšlakstykite citrinos sultimis.','Kepkite 200 °C apie 20 min.']}
+];
+
+/* ---------- Būsena ir saugojimas ---------- */
+const KEY='eatmefirst-v1';
+function fix(s){s=s||{};return{products:s.products||[],customRecipes:s.customRings||{})}}
+function loadLocal(){try{const s=localStorage.getItem(KEY);if(s)return fix(JSON.parse(s))}catch(e){}return fix()}
+let state=loadLocal();
+let dbRef=null,saveTimer=null,writing=false,dirty=false;
+function commit(){
+  render();
+  try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}
+  if(dbRef){dirty=true;clearTimeout(saveTimer);saveTimer=setTimeout(flush,400)}
+}
+async function flush(){
+  if(writing||!dirty||!dbRef)return;
+  writing=true;dirty=false;
+  try{await dbRef.set(JSON.parse(JSON.stringify(state)))}
+  catch(e){
+    if(e&&e.code==='invalid_argument'){dbRef=null;setSync('Neturite teisės keisti bendrų duomenų')}
+    else toast('Nepavyko išsaugoti. Pakeitimai liko šiame įrenginyje.');
+  }
+  writing=false;if(dirty)flush();
+}
+function setSync(t){document.getElementById('sync').textContent=t}
+
+
+/* ---------- Pagalbinės ---------- */
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').toLowerCase().trim().replace(/\s+/g,' ');
+const stemW=w=>w.length>4?w.replace(/(iai|ai|is|as|ys|us|ės|os|ė|a|i|s)$/,''):w;
+const stemAll=s=>norm(s).split(' ').map(stemW).join(' ');
+function same(prod,ing){const P=stemAll(prod),I=stemAll(ing);return P===I||P.startsWith(I+' ')}
+const isStaple=n=>STAPLES.includes(norm(n));
+const fmt=n=>{n=Math.round(n*10)/10;return String(n).replace('.',',')};
+function todayMid(){const d=new Date();d.setHours(0,0,0,0);return d}
+function daysLeft(exp){if(!exp)return null;const [y,m,d]=exp.split('-').map(Number);return Math.round((new Date(y,m-1,d)-todayMid())/864e5)}
+function status(d){const w=state.settings.warnDays;if(d===null)return'none';if(d<0)return'expired';if(d<=1)return'red';if(d<=w)return'amber';return'green'}
+function whenText(d){if(d===null)return'be datos';if(d<0)return'pasibaigė prieš '+(-d)+' d.';if(d===0)return'baigiasi šiandien';if(d===1)return'baigiasi rytoj';return'liko '+d+' d.'}
+let toastT;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3200)}
+const allRecipes=()=>RECIPES.concat(state.customRecipes);
+const getRecipe=id=>allRecipes().find(r=>r.id===id);
+
+/* Recepto analizė pagal turimas atsargas */
+function analyze(r,f=1){
+  const items=r.ing.map(([name,qty,unit])=>{
+    if(isStaple(name)||!qty)return{name,qty:0,unit,staple:true,ok:true};
+    const need=qty*f;
+    const matches=state.products.filter(p=>same(p.name,name)&&p.qty>0&&!(daysLeft(p.expiry)<0));
+    const sameUnit=matches.filter(p=>p.unit===unit);
+    const have=sameUnit.reduce((a,p)=>a+Number(p.qty),0);
+    const otherUnit=matches.length>sameUnit.length;
+    const ok=matches.length>0&&(have>=need-1e-6||(otherUnit&&!sameUnit.length));
+    const expiring=matches.some(p=>{const d=daysLeft(p.expiry);return d!==null&&d<=state.settings.warnDays});
+    return{name,qty:need,unit,staple:false,ok,have,matches,expiring,missing:Math.max(0,need-have)};
+  });
+  const main=items.filter(i=>!i.staple);
+  return{items,total:main.length,have:main.filter(i=>i.ok).length,expiring:main.filter(i=>i.expiring).map(i=>i.name)};
+}
+
+/* ---------- UI būsena ---------- */
+const ui={tab:'inv',loc:'Visi',time:0,favOnly:false,sort:'match',editId:null,detailId:null,servings:2};
+
+/* ---------- Atvaizdavimas ---------- */
+function render(){renderAlert();renderInv();renderRecipes();renderShop();if($('recDlg').open)renderDetail();renderDatalist()}
+
+function renderAlert(){
+  const urgent=state.products.map(p=>({p,d:daysLeft(p.expiry)})).filter(x=>x.d!==null&&x.d<=state.settings.warnDays).sort((a,b)=>a.d-b.d);
+  const el=$('alert');
+  if(!urgent.length){el.hidden=true;return}
+  el.hidden=false;
+  el.innerHTML=`<p><strong>Pirmiausia suvalgykite:</strong> ${urgent.slice(0,4).map(x=>esc(x.p.name)+' ('+whenText(x.d)+')').join(', ')}${urgent.length>4?' ir dar '+(urgent.length-4):''}</p><button class="btn small" id="alertBtn" type="button">Rodyti receptus</button>`;
+  $('alertBtn').onclick=()=>{ui.sort='expiring';$('sortSel').value='expiring';setTab('rec')};
+}
+
+function renderInv(){
+  const locs=['Visi','Šaldytuvas','Šaldiklis','Spintelė'];
+  $('locChips').innerHTML=locs.map(l=>`<button class="chip" type="button" data-loc="${l}" aria-pressed="${ui.loc===l}">${l}</button>`).join('');
+  $('warnDays').value=String(state.settings.warnDays);
+  const list=state.products.filter(p=>ui.loc==='Visi'||p.location===ui.loc)
+    .sort((a,b)=>{const da=daysLeft(a.expiry),db=daysLeft(b.expiry);return (da===null?9999:da)-(db===null?9999:db)});
+  if(!list.length){$('invList').innerHTML=`<li class="empty" style="border:0;background:none">Čia dar tuščia. Pridėkite, kas šiuo metu yra ${ui.loc==='Visi'?'namuose':ui.loc.toLowerCase()==='spintelė'?'spintelėje':ui.loc.toLowerCase()==='šaldiklis'?'šaldiklyje':'šaldytuve'}.</li>`;return}
+  $('invList').innerHTML=list.map(p=>{
+    const d=daysLeft(p.expiry),s=status(d);
+    const big=d===null?'?':d<0?'!':d;
+    const small=d===null?'be datos':d<0?'pasibaigė':d===0?'šiandien':d===1?'rytoj':'d.';
+    return`<li><div class="day s-${s}" aria-label="${whenText(d)}"><b>${big}</b><small>${small}</small></div>
+      <div class="info"><div class="name">${esc(p.name)}</div><div class="meta">${fmt(p.qty)} ${esc(p.unit)}, ${esc(p.location)}, ${whenText(d)}</div></div>
+      <div class="acts"><button class="btn ghost small" data-edit="${p.id}" type="button">Redaguoti</button><button class="btn ghost small" data-del="${p.id}" type="button">Nurašyti</button></div></li>`}).join('');
+}
+
+function renderRecipes(){
+  const times=[[0,'Bet koks laikas'],[15,'Iki 15 min'],[30,'Iki 30 min'],[60,'Iki 60 min']];
+  $('timeChips').innerHTML=times.map(([t,l])=>`<button class="chip" type="button" data-time="${t}" aria-pressed="${ui.time===t}">${l}</button>`).join('')+
+    `<button class="chip" type="button" id="favChip" aria-pressed="${ui.favOnly}">♥ Mėgstami</button>`;
+  let rs=allRecipes().map(r=>({r,a:analyze(r)}));
+  if(ui.time)rs=rs.filter(x=>x.r.time<=ui.time);
+  if(ui.favOnly)rs=rs.filter(x=>state.favorites.includes(x.r.id));
+  const ratio=x=>x.a.total?x.a.have/x.a.total:0;
+  const rate=x=>state.ratings[x.r.id]||0;
+  const sorts={
+    match:(a,b)=>ratio(b)-ratio(a)||b.a.expiring.length-a.a.expiring.length,
+    expiring:(a,b)=>b.a.expiring.length-a.a.expiring.length||ratio(b)-ratio(a),
+    time:(a,b)=>a.r.time-b.r.time,
+    rating:(a,b)=>rate(b)-rate(a)||ratio(b)-ratio(a)};
+  rs.sort(sorts[ui.sort]);
+  if(!rs.length){$('recList').innerHTML=`<p class="empty">Nėra receptų pagal pasirinktus filtrus.${ui.favOnly?' Pažymėkite receptą širdele, kad jis atsirastų čia.':''}</p>`;return}
+  $('recList').innerHTML=rs.map(({r,a})=>{
+    const rt=state.ratings[r.id],fav=state.favorites.includes(r.id);
+    return`<button class="rc" type="button" data-rec="${r.id}">
+      <h3>${fav?'<span class="heart" aria-label="Mėgstamas">♥</span> ':''}${esc(r.name)}</h3>
+      <div class="row"><span>${r.time} min</span><span>${rt?'<span class="stars">'+'★'.repeat(rt)+'</span>':'neįvertintas'}</span></div>
+      <div class="row"><span>Turite ${a.have} iš ${a.total}</span>${r.custom?'<span>mano</span>':''}</div>
+      <div class="bar"><i style="width:${a.total?Math.round(a.have/a.total*100):0}%"></i></div>
+      ${a.expiring.length?`<div class="uses">Sunaudos: ${a.expiring.map(esc).join(', ')}</div>`:''}
+    </button>`}).join('');
+}
+
+function renderDetail(){
+  const r=getRecipe(ui.detailId);if(!r){$('recDlg').close();return}
+  const f=ui.servings/r.servings,a=analyze(r,f),fav=state.favorites.includes(r.id),rt=state.ratings[r.id]||0;
+  $('recBody').innerHTML=`<h2>${esc(r.name)}</h2>
+    <p style="color:var(--muted);margin:6px 0 14px">${r.time} min. Turite ${a.have} iš ${a.total} ingredientų.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between">
+      <div class="stepper"><span>Porcijos</span><button type="button" id="sMinus" aria-label="Mažiau porcijų">−</button><b id="sVal">${ui.servings}</b><button type="button" id="sPlus" aria-label="Daugiau porcijų">+</button></div>
+      <div class="rate" aria-label="Įvertinimas">${[1,2,3,4,5].map(n=>`<button type="button" data-rate="${n}" class="${n<=rt?'on':''}" aria-label="${n} iš 5">★</button>`).join('')}</div>
+    </div>
+    <h3 style="margin:16px 0 4px;font-size:16px">Ingredientai</h3>
+    <ul class="ing">${a.items.map(i=>`<li><span>${esc(i.name)}${i.staple?'':' — '+fmt(i.qty)+' '+esc(i.unit)}</span>
+      <span>${i.staple?'<span style="color:var(--muted)">pagal skonį</span>':i.ok?(i.expiring?'<span class="exp">turite, greitai genda</span>':'<span class="ok">turite</span>'):'<span class="miss">trūksta'+(i.have>0?' '+fmt(i.missing)+' '+esc(i.unit):'')+'</span>'}</span></li>`).join('')}</ul>
+    <h3 style="margin:16px 0 4px;font-size:1ecipes||[],favorites:s.favorites||[],ratings:s.ratings||{},shopping:s.shopping||[],plan:s.plan||[],settings:Object.assign({wa6px">Gaminimas</h3>
+    <ol class="steps">${(r.steps||[]).map(s=>`<li>${esc(s)}</li>`).join('')||'<li>Žingsnių nėra.</li>'}</ol>
+    <div class="actions">
+      <button class="btn" type="button" id="cookBtn">Pagaminau</button>
+      <button class="btn ghost" type="button" id="planBtn">Į pirkinių planą</button>
+      <button class="btn ghost" type="button" id="favBtn">${fav?'♥ Pašalinti iš mėgstamų':'♡ Į mėgstamus'}</button>
+      ${r.custom?'<button class="btn ghost" type="button" id="delRecBtn">Ištrinti receptą</button>':''}
+      <button class="link" type="button" id="closeDlg">Uždaryti</button>
+    </div>`;
+  $('sMinus').onclick=()=>{if(ui.servings>1){ui.servings--;renderDetail()}};
+  $('sPlus').onclick=()=>{ui.servings++;renderDetail()};
+  $('recBody').querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{const n=+b.dataset.rate;if(state.ratings[r.id]===n)delete state.ratings[r.id];else state.ratings[r.id]=n;commit()});
+  $('favBtn').onclick=()=>{const i=state.favorites.indexOf(r.id);if(i>=0)state.favorites.splice(i,1);else state.favorites.push(r.id);commit()};
+  $('cookBtn').onclick=()=>cook(r,f);
+  $('planBtn').onclick=()=>{const ex=state.plan.find(p=>p.recipeId===r.id);if(ex)ex.servings=ui.servings;else state.plan.push({id:uid(),recipeId:r.id,servings:ui.servings});commit();toast('Įtraukta į planą: '+r.name)};
+  $('closeDlg').onclick=()=>$('recDlg').close();
+  if(r.custom)$('delRecBtn').onclick=()=>{if(!confirm('Ištrinti receptą „'+r.name+'“?'))return;state.customRecipes=state.customRecipes.filter(x=>x.id!==r.id);state.plan=state.plan.filter(p=>p.recipeId!==r.id);$('recDlg').close();commit()};
+}
+
+function cook(r,f){
+  const used=[],notChanged=[];
+  r.ing.forEach(([name,qty,unit])=>{
+    if(isStaple(name)||!qty)return;
+    let need=qty*f;
+    const ps=state.products.filter(p=>same(p.name,name)).sort((a,b)=>(daysLeft(a.expiry)??9999)-(daysLeft(b.expiry)??9999));
+    if(!ps.length)return;
+    const su=ps.filter(p=>p.unit===unit);
+    if(!su.length){notChanged.push(name);return}
+    for(const p of su){if(need<=0)break;const take=Math.min(p.qty,need);p.qty=Math.round((p.qty-take)*1000)/1000;need-=take}
+    used.push(name);
+  });
+  state.products=state.products.filter(p=>p.qty>0);
+  state.plan=state.plan.filter(p=>p.recipeId!==r.id);
+  $('recDlg').close();commit();
+  toast(used.length?'Nurašyta iš atsargų: '+used.join(', ')+(notChanged.length?'. Patikrinkite kiekį: '+notChanged.join(', '):''):'Atsargose nebuvo šio recepto produktų.');
+}
+
+function renderShop(){
+  $('planList').innerHTML=state.plan.length?state.plan.map(p=>{const r=getRecipe(p.recipeId);return r?`<li><span class="grow"><b>${esc(r.name)}</b>, ${p.servings} porc.</span><button class="btn ghost small" type="button" data-unplan="${p.id}">Pašalinti</button></li>`:''}).join('')
+    :'<li class="empty" style="border:0;background:none">Planas tuščias. Recepte paspauskite „Į pirkinių planą“.</li>';
+  $('genBtn').disabled=!state.plan.length;
+  $('shopList').innerHTML=state.shopping.length?state.shopping.map(s=>`<li class="${s.done?'done':''}"><input type="checkbox" data-buy="${s.id}" ${s.done?'checked':''} aria-label="Nupirkta: ${esc(s.name)}">
+      <span class="grow"><span>${esc(s.name)}${s.qty?' — '+fmt(s.qty)+' '+esc(s.unit):''}</span></span>${s.auto?'<span class="tag">iš plano</span>':''}
+      <button class="link" type="button" data-unshop="${s.id}" aria-label="Pašalinti ${esc(s.name)}">✕</button></li>`).join('')
+    :'<li class="empty" style="border:0;background:none">Krepšys tuščias.</li>';
+}
+
+function renderDatalist(){
+  const names=new Set();allRecipes().forEach(r=>r.ing.forEach(([n])=>{if(!isStaple(n))names.add(n)}));
+  state.products.forEach(p=>names.add(norm(p.name)));
+  $('ingList').innerHTML=[...names].sort((a,b)=>a.localeCompare(b,'lt')).map(n=>`<option value="${esc(n)}">`).join('');
+}
+
+/* ---------- Veiksmai ---------- */
+function setTab(t){ui.tab=t;document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  ['inv','rec','shop'].forEach(x=>$('tab-'+x).hidden=x!==t);window.scrollTo(0,0)}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+
+function resetProdForm(){ui.editId=null;$('prodForm').reset();$('pQty').value=1;$('pSubmit').textContent='Pridėti';$('pCancel').hidden=true}
+$('prodForm').onsubmit=e=>{
+  e.preventDefault();
+  const data={name:$('pName').value.trim(),qty:Number($('pQty').value)||0,unit:$('pUnit').value,location:$('pLoc').value,expiry:$('pExp').value};
+  if(!data.name)return;
+  if(ui.editId){Object.assign(state.products.find(p=>p.id===ui.editId),data);toast('Išsaugota: '+data.name)}
+  else{state.products.push(Object.assign({id:uid(),added:new Date().toISOString().slice(0,10)},data));toast('Pridėta: '+data.name)}
+  resetProdForm();commit();$('pName').focus();
+};
+$('pCancel').onclick=resetProdForm;
+$('invList').onclick=e=>{
+  const ed=e.target.closest('[data-edit]'),del=e.target.closest('[data-del]');
+  if(ed){const p=state.products.find(x=>x.id===ed.dataset.edit);ui.editId=p.id;$('pName').value=p.name;$('pQty').value=p.qty;$('pUnit').value=p.unit;$('pLoc').value=p.location;$('pExp').value=p.expiry||'';$('pSubmit').textContent='Išsaugoti pakeitimus';$('pCancel').hidden=false;window.scrollTo(0,0);$('pName').focus()}
+  if(del){const p=state.products.find(x=>x.id===del.dataset.del);state.products=state.products.filter(x=>x.id!==p.id);if(ui.editId===p.id)resetProdForm();commit();toast('Nurašyta: '+p.name)}
+};
+$('locChips').onclick=e=>{const b=e.target.closest('[data-loc]');if(b){ui.loc=b.dataset.loc;renderInv()}};
+$('warnDays').onchange=e=>{state.settings.warnDays=+e.target.value;commit()};
+
+$('sortSel').onchange=e=>{ui.sort=e.target.value;renderRecipes()};
+$('timeChips').onclick=e=>{const b=e.target.closest('[data-time]');if(b){ui.time=+b.dataset.time;renderRecipes()}if(e.target.id==='favChip'){ui.favOnly=!ui.favOnly;renderRecipes()}};
+$('recList').onclick=e=>{const b=e.target.closest('[data-rec]');if(!b)return;const r=getRecipe(b.dataset.rec);ui.detailId=r.id;ui.servings=r.servings;renderDetail();$('recDlg').showModal()};
+
+$('newRecBtn').onclick=()=>{$('newForm').reset();$('nTime').value=30;$('nServ').value=2;$('newDlg').showModal()};
+$('newCancel').onclick=()=>$('newDlg').close();
+$('newForm').onsubmit=e=>{
+  e.preventDefault();
+  const ing=$('nIng').value.split('\n').map(l=>l.split(/[,;]/).map(s=>s.trim())).filter(p=>p[0]).map(p=>{const q=parseFloat((p[1]||'').replace(',','.'));return q?[norm(p[0]),q,['g','ml','vnt'].includes(p[2])?p[2]:'vnt']:[norm(p[0])]});
+  if(!ing.length){toast('Įrašykite bent vieną ingredientą.');return}
+  state.customRecipes.push({id:'c'+uid(),custom:true,name:$('nName').value.trim(),time:+$('nTime').value||30,servings:+$('nServ').value||1,ing,steps:$('nSteps').value.split('\n').map(s=>s.trim()).filter(Boolean)});
+  $('newDlg').close();commit();toast('Receptas išsaugotas.');
+};
+
+$('planList').onclick=e=>{const b=e.target.closest('[data-unplan]');if(b){state.plan=state.plan.filter(p=>p.id!==b.dataset.unplan);commit()}};
+$('genBtn').onclick=()=>{
+  state.shopping=state.shopping.filter(s=>!(s.auto&&!s.done));
+  const need=[];
+  state.plan.forEach(p=>{const r=getRecipe(p.recipeId);if(!r)return;analyze(r,p.servings/r.servings).items.forEach(i=>{
+    if(i.staple||i.ok)return;
+    const ex=need.find(n=>same(n.name,i.name)&&n.unit===i.unit);
+    if(ex)ex.qty+=i.missing;else need.push({name:i.name,unit:i.unit,qty:i.missing});
+  })});
+  need.forEach(n=>state.shopping.push({id:uid(),name:n.name,qty:Math.ceil(n.qty*10)/10,unit:n.unit,done:false,auto:true}));
+  commit();toast(need.length?'Į krepšį įdėta prekių: '+need.length:'Visko pakanka, nieko pirkti nereikia.');
+};
+$('shopForm').onsubmit=e=>{e.preventDefault();const name=$('sName').value.trim();if(!name)return;
+  state.shopping.push({id:uid(),name,qty:Number($('sQty').value)||0,unit:$('sUnit').value,done:false});$('shopForm').reset();$('sQty').value=1;commit();$('sName').focus()};
+$('shopList').onclick=e=>{
+  const c=e.target.closest('[data-buy]'),x=e.target.closest('[data-unshop]');
+  if(c){state.shopping.find(s=>s.id===c.dataset.buy).done=c.checked;commit()}
+  if(x){state.shopping=state.shopping.filter(s=>s.id!==x.dataset.unshop);commit()}
+};
+$('moveBought').onclick=()=>{
+  const bought=state.shopping.filter(s=>s.done);
+  if(!bought.length){toast('Pažymėkite nupirktas prekes.');return}
+  bought.forEach(s=>state.products.push({id:uid(),name:s.name,qty:s.qty||1,unit:s.unit,location:'Šaldytuvas',expiry:'',added:new Date().toISOString().slice(0,10)}));
+  state.shopping=state.shopping.filter(s=>!s.done);commit();
+  toast('Perkelta į atsargas: '+bought.length+'. Įveskite galiojimo datas.');
+};
+$('clearBought').onclick=()=>{state.shopping=state.shopping.filter(s=>!s.done);commit()};
+
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
+rnDays:3},s.sett/label></div>
+      <div class="c2"><label>Kiekis<input id="pQty" type="number" min="0" step="any" value="1" required></label></di
