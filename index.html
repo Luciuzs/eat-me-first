@@ -135,7 +135,8 @@ ol.steps{padding-left:20px}
   <!-- ATSARGOS -->
   <section id="tab-inv">
     <form id="prodForm" class="panel grid" autocomplete="off">
-      <div class="c6"><label>Produktas<input id="pName" list="ingList" required placeholder="pvz. pienas"><v>
+      <div class="c6"><label>Produktas<input id="pName" list="ingList" required placeholder="pvz. pienas"></label></div>
+      <div class="c2"><label>Kiekis<input id="pQty" type="number" min="0" step="any" value="1" required></label></div>
       <div class="c2"><label>Vienetai<select id="pUnit"><option>vnt</option><option>g</option><option>ml</option></select></label></div>
       <div class="c2"><label>Vieta<select id="pLoc"><option>Šaldytuvas</option><option>Šaldiklis</option><option>Spintelė</option></select></label></div>
       <div class="c3"><label>Galioja iki<input id="pExp" type="date"></label></div>
@@ -230,7 +231,7 @@ const RECIPES=[
 
 /* ---------- Būsena ir saugojimas ---------- */
 const KEY='eatmefirst-v1';
-function fix(s){s=s||{};return{products:s.products||[],customRecipes:s.customRings||{})}}
+function fix(s){s=s||{};return{products:s.products||[],customRecipes:s.customRecipes||[],favorites:s.favorites||[],ratings:s.ratings||{},shopping:s.shopping||[],plan:s.plan||[],settings:Object.assign({warnDays:3},s.settings||{})}}
 function loadLocal(){try{const s=localStorage.getItem(KEY);if(s)return fix(JSON.parse(s))}catch(e){}return fix()}
 let state=loadLocal();
 let dbRef=null,saveTimer=null,writing=false,dirty=false;
@@ -357,7 +358,7 @@ function renderDetail(){
     <h3 style="margin:16px 0 4px;font-size:16px">Ingredientai</h3>
     <ul class="ing">${a.items.map(i=>`<li><span>${esc(i.name)}${i.staple?'':' — '+fmt(i.qty)+' '+esc(i.unit)}</span>
       <span>${i.staple?'<span style="color:var(--muted)">pagal skonį</span>':i.ok?(i.expiring?'<span class="exp">turite, greitai genda</span>':'<span class="ok">turite</span>'):'<span class="miss">trūksta'+(i.have>0?' '+fmt(i.missing)+' '+esc(i.unit):'')+'</span>'}</span></li>`).join('')}</ul>
-    <h3 style="margin:16px 0 4px;font-size:1ecipes||[],favorites:s.favorites||[],ratings:s.ratings||{},shopping:s.shopping||[],plan:s.plan||[],settings:Object.assign({wa6px">Gaminimas</h3>
+    <h3 style="margin:16px 0 4px;font-size:16px">Gaminimas</h3>
     <ol class="steps">${(r.steps||[]).map(s=>`<li>${esc(s)}</li>`).join('')||'<li>Žingsnių nėra.</li>'}</ol>
     <div class="actions">
       <button class="btn" type="button" id="cookBtn">Pagaminau</button>
@@ -480,5 +481,3 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 </script>
 </body>
 </html>
-rnDays:3},s.sett/label></div>
-      <div class="c2"><label>Kiekis<input id="pQty" type="number" min="0" step="any" value="1" required></label></di
